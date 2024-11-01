@@ -1,0 +1,119 @@
+{% extends 'core/base.html' %}
+<!--  -->
+{% block title %}{{room.name}} | {% endblock %}
+<!--  -->
+{% block content %}
+<div class="text-center p-10 lg:p-20">
+  <h1 class="text-2xl lg:text-4xl text-white">{{room.name}}</h1>
+</div>
+<!-- Container for messages -->
+<div class="lg:w-2/4 mx-4 lg:mx-auto bg-white rounded-xl">
+  <!-- here id chat-messages -->
+  <div class="chat-messages space-y-3" id="chat-messages">
+    <h1 class="p-2 text-xl text-green-400">Chat Messages:</h1>
+    <!-- box for messages with user name -->
+    {% for message in messages %}
+    <div class="p-4 bg-gray-200 rounded-xl">
+      <p class="front-semibold">{{message.user.username}}:</p>
+      <p>{{message.content}}</p>
+    </div>
+    {% endfor %}
+    <!--  -->
+  </div>
+</div>
+<!-- input for chatting -->
+<!-- container white -->
+<div class="lg:w-2/4 mt-6 mx-4 lg:mx-auto p-4 bg-white rounded-xl">
+  <form action="." method="post" class="flex">
+    <!-- {% csrf_token %} -->
+    <input
+      type="text"
+      name="content"
+      class="flex-1 mr-3"
+      placeholder="Your message..."
+      id="chat-message-input"
+    />
+    <button
+      class="px-5 py-3 rounded-xl text-white bg-teal-500 hover:bg-teal-700"
+      id="chat-message-submit"
+    >
+      Submit
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+<!--  -->
+{% block scripts %}
+<!-- get the room.name and save as element in HTML -->
+{{room.slug|json_script:"json-roomname"}}
+<!-- get elemnt with id and username -->
+{{request.user.username|json_script:"json-username"}}
+<script>
+  //save roomName
+  //link to parse func
+  //https://www.w3schools.com/js/js_json_parse.asp
+  const roomName = JSON.parse(
+    document.getElementById("json-roomname").textContent
+  );
+  //userName
+  const userName = JSON.parse(
+    document.getElementById("json-username").textContent
+  );
+  //----create WebSocket  ---
+  const chatSocket = new WebSocket(
+    "ws://" + window.location.host + "/ws/" + roomName + "/"
+  );
+
+  //listenung the server messages
+  chatSocket.onmessage = function (e) {
+    console.log("onmessage");
+    //receive data from SERVER (get data)
+    const data = JSON.parse(e.data);
+    //if data were came from server
+    if (data.message) {
+      //<!-- box for messages -->
+      let html = `<div class="p-4 bg-gray-200 rounded-xl">
+        <p class="front-semibold">${data.username}: </p>
+        <p> ${data.message}</p>
+        </div>`;
+
+      document.querySelector("#chat-messages").innerHTML += html;
+      scrollToBottom();
+    } else {
+      alert("The message was empty");
+    } //if-else
+  }; //onmessage()
+
+  //-----------------get message from input----------------------------
+  document.querySelector("#chat-message-submit").onclick = function (e) {
+    e.preventDefault();
+    const messageInputDom = document.getElementById("chat-message-input");
+    const message = messageInputDom.value;
+    //----------------------------------------------
+    //send data to websocket to BACKEND
+    chatSocket.send(
+      JSON.stringify({
+        message: message,
+        username: userName,
+        room: roomName,
+      })
+    ); //send()
+    //----------------------------------
+    messageInputDom.value = "";
+    return false;
+  }; //onclick message
+
+  chatSocket.onclose = function (e) {
+    console.log("onclose");
+  };
+
+  //scrolling function
+  function scrollToBottom() {
+    const objDiv = document.querySelector("#chat-messages");
+    objDiv.scrollTop = objDiv.scrollHeight;
+  }
+
+  scrollToBottom();
+</script>
+{% endblock %}

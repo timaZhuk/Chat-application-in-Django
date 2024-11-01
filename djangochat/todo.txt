@@ -1,0 +1,71 @@
+
+--link to project
+https://www.youtube.com/watch?v=SF1k_Twr9cg&t=2614s
+
+---some commands:
+pip install virtualenv
+---creating virtual env: 
+virtualenv <name_of_env>
+or 
+python -m venv <Name_of_env>
+---Activate virtual env:
+Mac: source <name_of_env>/bin/Activate
+Win: <name_of_env>\Scripts\Activate
+--Create project in Django
+django-admin startproject <name_of_project>
+--Creating app in Django
+python manage.py startapp <name_of_app>
+
+#------PLAN-----------
+
+-DONE sign up func
+-DONE logout func
+-DONE log in func
+
+ROOMs
+-DONE Create app for ROOMs
+-DONE Create superuser
+-DONE Show list of ROOMs
+-DONE Room detail viewBox
+-DONE Creating a consumer
+-Joining a chat
+
+
+Update to the chatrooms project.
+1) python -m pip install -U 'channels[daphne]'
+2) listing 'daphne' on top of installed apps on the settings file.
+
+For anyone looking for a way to display 25 newest messages in room (instead of 25 oldest), you can do it like that:
+messages = Message.objects.filter(room=room).order_by('-date_added')[0:25][::-1]
+
+
+If you are having trouble loging out use this in your base.html: 
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">logout</button>
+</form>
+
+I spent two hours trying to find the error.
+
+<!-- Logout -->
+        <form action="{% url 'logout' %}" method="post">
+          {% csrf_token %}
+          <button
+            type="submit"
+            class="flex items-center px-5 py-3 bg-teal-400 rounded-xl text-white hover:text-gray-400 hover:bg-green-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="size-6"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.5 3.75a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5V15a.75.75 0 0 0-1.5 0v3.75a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-6a3 3 0 0 0-3 3V9A.75.75 0 1 0 9 9V5.25a1.5 1.5 0 0 1 1.5-1.5h6ZM5.78 8.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 0 0 0 1.06l3 3a.75.75 0 0 0 1.06-1.06l-1.72-1.72H15a.75.75 0 0 0 0-1.5H4.06l1.72-1.72a.75.75 0 0 0 0-1.06Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            LOG OUT
+          </button>
+        </form>
